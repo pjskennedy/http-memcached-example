@@ -22,38 +22,24 @@ job "http-memcached-example" {
       driver = "docker"
 
       config {
-        image = "haproxy:1.8"
+        image = "quay.io/pjsk/haproxy:1.8"
 
         port_map {
-          http = 9000
-        }
-      }
-
-      service {
-        name = "http-memcached-example"
-        tags = ["lb"]
-        port = "http"
-
-        check {
-          name     = "alive"
-          type     = "http"
-          path     = "/health"
-          method   = "GET"
-          interval = "10s"
-          timeout  = "2s"
+          admin = 8880
+          http  = 9000
         }
       }
 
       artifact {
-        source      = "./haproxy.cfg.ctmpl"
-        destination = "/local/haproxy.cfg.ctmpl"
+        source      = "https://raw.githubusercontent.com/pjskennedy/http-memcached-example/master/haproxy.cfg.ctmpl"
+        destination = "local/"
       }
 
       template {
-        source        = "/local/haproxy.cfg.ctmpl"
-        destination   = "/usr/local/etc/haproxy/haproxy.cfg"
+        source        = "local/haproxy.cfg.ctmpl"
+        destination   = "/local/haproxy.cfg"
         change_mode   = "signal"
-        change_signal = "SIGINT"
+        change_signal = "SIGHUP"
       }
 
       resources {
@@ -65,6 +51,10 @@ job "http-memcached-example" {
 
           port "http" {
             static = "9000"
+          }
+
+          port "admin" {
+            static = "8880"
           }
         }
       }
