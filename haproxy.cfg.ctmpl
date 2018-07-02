@@ -1,0 +1,24 @@
+global
+      maxconn 4096
+      pidfile /var/run/haproxy.pid
+
+defaults
+      mode http
+      retries 3
+      option redispatch
+      log global
+      maxconn 2000
+      timeout connect 5000ms
+      timeout client 50000ms
+      timeout server 50000ms
+
+listen WEBSERVER
+    bind *:9000
+    mode http
+    balance leastconn
+    option httpchk /health
+    option allbackups
+    option tcplog
+    {{- range service "webserver.http-memcached-example" "any"}}
+    server {{.Node}} {{.Address}}:{{.Port}}
+    {{- end}}
